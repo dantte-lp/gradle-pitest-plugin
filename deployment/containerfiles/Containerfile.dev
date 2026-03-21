@@ -1,0 +1,115 @@
+# gradle-pitest-plugin development image
+# Based on jfrog-tools Containerfile.dev pattern
+# Oracle Linux 10 + GraalVM 25 + Gradle 9.4.1 + quality/security scanners
+#
+# Build:
+#   podman build -f deployment/containerfiles/Containerfile.dev -t pitest-plugin:dev .
+#
+# Run:
+#   podman run --rm -it -v .:/workspace:Z pitest-plugin:dev
+#   podman run --rm -v .:/workspace:Z pitest-plugin:dev bash scripts/quality.sh full
+
+FROM oraclelinux:10
+
+ARG GRAAL_VERSION_17=17.0.12-graal
+ARG GRAAL_VERSION_21=21.0.10-graal
+ARG GRAAL_VERSION_25=25.0.2-graal
+ARG GRADLE_VERSION=9.4.1
+
+LABEL org.opencontainers.image.title="gradle-pitest-plugin Development" \
+      org.opencontainers.image.description="Oracle Linux 10 dev image with GraalVM 17+21+25, Gradle 9.4.1 and quality tools for Groovy plugin development" \
+      org.opencontainers.image.licenses="Apache-2.0" \
+      com.pitest.java.version="25.0.2-graal" \
+      com.pitest.gradle.version="9.4.1"
+
+ENV SDKMAN_DIR=/root/.sdkman \
+    GRADLE_USER_HOME=/workspace/.gradle \
+    BASH_ENV=/root/.bashrc
+
+# === OS dependencies ===
+RUN dnf install -y \
+        curl \
+        git \
+        unzip \
+        zip \
+        findutils \
+        which \
+        python3 \
+        python3-pip && \
+    dnf clean all && \
+    rm -rf /var/cache/dnf
+
+# === SDKMAN + JDK + Gradle ===
+RUN curl -fsSL https://get.sdkman.io | bash && \
+    chmod +x "${SDKMAN_DIR}/bin/sdkman-init.sh" && \
+    printf '\nsource "%s/bin/sdkman-init.sh"\n' "${SDKMAN_DIR}" >> /root/.bashrc
+
+RUN bash -lc "source ${SDKMAN_DIR}/bin/sdkman-init.sh && \
+    sdk install java ${GRAAL_VERSION_17} && \
+    sdk install java ${GRAAL_VERSION_21} && \
+    sdk install java ${GRAAL_VERSION_25} && \
+    sdk default java ${GRAAL_VERSION_25} && \
+    sdk install gradle ${GRADLE_VERSION} && \
+    sdk flush archives && \
+    sdk flush temp"
+
+ENV JAVA_HOME=${SDKMAN_DIR}/candidates/java/current \
+    GRADLE_HOME=${SDKMAN_DIR}/candidates/gradle/current \
+    PATH=${SDKMAN_DIR}/candidates/java/current/bin:${SDKMAN_DIR}/candidates/gradle/current/bin:${PATH} \
+    GRADLE_OPTS="-Dorg.gradle.caching=true -Dorg.gradle.parallel=true" \
+    JAVA_TOOL_OPTIONS="-XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0 -XX:+ExitOnOutOfMemoryError"
+
+# === Security & Code Quality Scanners ===
+
+# Semgrep (SAST — supports Groovy/Java, YAML, general patterns)
+RUN python3 -m pip install --no-cache-dir semgrep
+
+# Trivy (vulnerability scanner — filesystems, dependencies)
+RUN curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b /usr/local/bin
+
+# Gitleaks (secret detection)
+RUN curl -fsSL "https://github.com/gitleaks/gitleaks/releases/download/v8.27.2/gitleaks_8.27.2_linux_x64.tar.gz" -o /tmp/gitleaks.tar.gz && \
+    tar -xzf /tmp/gitleaks.tar.gz -C /usr/local/bin gitleaks && \
+    rm -f /tmp/gitleaks.tar.gz
+
+# Grype (SCA vulnerability scanner)
+RUN curl -sSfL https://raw.githubusercontent.com/anchore/grype/main/install.sh | sh -s -- -b /usr/local/bin
+
+# Syft (SBOM generator)
+RUN curl -sSfL https://raw.githubusercontent.com/anchore/syft/main/install.sh | sh -s -- -b /usr/local/bin
+
+# ShellCheck (shell script linter)
+RUN curl -fsSL "https://github.com/koalaman/shellcheck/releases/download/v0.11.0/shellcheck-v0.11.0.linux.x86_64.tar.gz" -o /tmp/shellcheck.tar.gz && \
+    tar -xzf /tmp/shellcheck.tar.gz -C /tmp && \
+    install -m 755 /tmp/shellcheck-v0.11.0/shellcheck /usr/local/bin/shellcheck && \
+    rm -rf /tmp/shellcheck*
+
+# Hadolint (Dockerfile/Containerfile linter)
+RUN curl -fsSL "https://github.com/hadolint/hadolint/releases/download/v2.12.0/hadolint-Linux-x86_64" -o /usr/local/bin/hadolint && \
+    chmod 755 /usr/local/bin/hadolint
+
+# OWASP Dependency-Check (SCA)
+RUN curl -fsSL "https://github.com/dependency-check/DependencyCheck/releases/download/v12.1.0/dependency-check-12.1.0-release.zip" -o /tmp/depcheck.zip && \
+    unzip -q /tmp/depcheck.zip -d /opt && \
+    ln -s /opt/dependency-check/bin/dependency-check.sh /usr/local/bin/dependency-check && \
+    rm -f /tmp/depcheck.zip
+
+# === Verify all tools ===
+RUN mkdir -p /workspace/.gradle/caches /workspace/.gradle/wrapper && \
+    java -version && \
+    gradle --version && \
+    semgrep --version && \
+    trivy --version && \
+    gitleaks version && \
+    shellcheck --version && \
+    hadolint --version && \
+    grype version && \
+    syft version && \
+    echo "All tools installed"
+
+WORKDIR /workspace
+
+# Gradle debug port
+EXPOSE 5005
+
+CMD ["/bin/bash"]

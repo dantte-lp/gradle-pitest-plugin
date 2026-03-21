@@ -1,0 +1,7 @@
+[extend]
+# Use default gitleaks rules
+# https://github.com/gitleaks/gitleaks#configuration
+
+[allowlist]
+description = "gradle-pitest-plugin allowlist"
+paths = []
