@@ -1,5 +1,26 @@
 # gradle-pitest-plugin changelog
 
+## 1.20.0 - 2026-03-21
+
+Gradle 9.x and JDK 25 compatibility (fork release).
+
+ - Gradle wrapper 8.14.3 → 9.4.1 with zero deprecation warnings
+ - JDK 25 (class file version 69) compatibility
+ - `PitestTask` is now `abstract class` (Groovy 4 enforces abstract `@Inject` methods from JavaExec)
+ - Remove deprecated `Configuration.visible` (Gradle 9.1+)
+ - Lazy `ReportingExtension.baseDirectory.dir()` instead of eager `.asFile.get()`
+ - Remove `@CompileDynamic` from production code
+ - `sourceCompatibility` 1.8 → 17
+ - Default PIT version 1.22.0 → 1.23.0
+ - Spock 2.4-groovy-3.0 → 2.4-groovy-4.0
+ - nebula-test 10.6.2 → 12.0.0
+ - plugin-publish-plugin 2.0.0 → 2.1.1, byte-buddy 1.18.4 → 1.18.7, junit-platform-launcher 6.0.3
+ - `afterSuite` Closure → `TestListener` (deprecated in Gradle 9.4)
+ - Gradle version test matrix: 9.0.0–9.4.1
+ - PIT < 1.19.0 excluded on JDK 25+ (ASM 9.7 doesn't support class version 69)
+ - GitHub Actions CI + Release workflows
+ - Kotlin test projects updated to 2.1.20
+
 ## 1.19.0 - Unreleased
 
 - Use a detached configuration to determine the platform-launcher dependency to avoid `ConcurrentModificationException` in `GradleDependencyReportTask` - [#390](https://github.com/szpak/gradle-pitest-plugin/issues/390) - [#393](https://github.com/szpak/gradle-pitest-plugin/pull/393) by [Björn Kautler](https://github.com/Vampire)

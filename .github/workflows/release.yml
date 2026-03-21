@@ -11,16 +11,16 @@ jobs:
     permissions:
       contents: read
     steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
 
       - name: Set up JDK 17
-        uses: actions/setup-java@c5195efecf7bdfc987ee8bae7a71cb8b11521c00 # v4
+        uses: actions/setup-java@c1e323688fd81a25caa38c78aa6df2d33d3e20d9 # v4
         with:
           distribution: temurin
           java-version: 17
 
       - name: Set up Gradle
-        uses: gradle/actions/setup-gradle@af1da67850ed9a4cedd57bfd976089dd991e2582 # v4
+        uses: gradle/actions/setup-gradle@0b6dd653ba04f4f93bf581ec31e66cbd7dcb644d # v4
 
       - name: Build
         run: ./gradlew build --no-daemon --warning-mode=all
@@ -29,7 +29,7 @@ jobs:
         run: ./gradlew validatePlugins --no-daemon
 
       - name: Upload plugin JAR
-        uses: actions/upload-artifact@ea165f8d65b6db9a6b7e75b195db0cb23deacb33 # v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: plugin-jar
           path: build/libs/*.jar
@@ -37,7 +37,7 @@ jobs:
 
       - name: Upload test reports
         if: always()
-        uses: actions/upload-artifact@ea165f8d65b6db9a6b7e75b195db0cb23deacb33 # v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: test-reports
           path: |
@@ -56,7 +56,7 @@ jobs:
 
       - name: Upload reports archive
         if: success()
-        uses: actions/upload-artifact@ea165f8d65b6db9a6b7e75b195db0cb23deacb33 # v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: release-reports
           path: gradle-pitest-plugin-*-reports.tar.gz
@@ -68,44 +68,42 @@ jobs:
     permissions:
       contents: write
     steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
         with:
           fetch-depth: 0
 
       - name: Download plugin JAR
-        uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
         with:
           name: plugin-jar
           path: artifacts/
 
       - name: Download reports archive
-        uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
         with:
           name: release-reports
 
-      - name: Extract release notes from CHANGES.md
+      - name: Extract release notes from CHANGELOG.md
         run: |
           VERSION="${GITHUB_REF_NAME#v}"
 
           # Extract the section between two version headers.
-          # From "## [X.Y.Z]" until next "## [" or end of file.
+          # Supports both "## [X.Y.Z]" (Keep a Changelog) and "## X.Y.Z - date" (upstream format).
           awk -v ver="$VERSION" '
-            /^## \[/ {
+            /^## / {
               if (found) exit
-              if ($0 ~ "\\[" ver "\\]") found=1
-              next
+              if ($0 ~ ver) { found=1; next }
             }
-            /^\[.+\]:/ && found { exit }
             found { print }
-          ' CHANGES.md > release-notes.md
+          ' CHANGELOG.md > release-notes.md
 
           # Fallback if no section found for this version.
           if [ ! -s release-notes.md ]; then
-            echo "No release notes found for version $VERSION in CHANGES.md."
+            echo "No release notes found for version $VERSION in CHANGELOG.md."
             {
               echo "## What's Changed"
               echo ""
-              echo "See [CHANGES.md](https://github.com/${{ github.repository }}/blob/master/CHANGES.md) for details."
+              echo "See [CHANGELOG.md](https://github.com/${{ github.repository }}/blob/master/CHANGELOG.md) for details."
             } > release-notes.md
           fi
 
