@@ -1,8 +1,9 @@
 # gradle-pitest-plugin changelog
 
-## 1.20.0 - 2026-03-21
+## 2.0.0 - 2026-03-21
 
-Gradle 9.x and JDK 25 compatibility (fork release).
+Fork release: Gradle 9.x and JDK 25 LTS compatibility.
+Breaking: Java 17+ required (was 8), Groovy 4 (was 3).
 
  - Gradle wrapper 8.14.3 → 9.4.1 with zero deprecation warnings
  - JDK 25 (class file version 69) compatibility

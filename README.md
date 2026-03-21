@@ -20,7 +20,7 @@
 ```groovy
 plugins {
     id 'java'
-    id 'info.solidsoft.pitest' version '1.20.0-SNAPSHOT'
+    id 'info.solidsoft.pitest' version '2.0.0'
 }
 
 pitest {
@@ -35,7 +35,7 @@ pitest {
 ```kotlin
 plugins {
     java
-    id("info.solidsoft.pitest") version "1.20.0-SNAPSHOT"
+    id("info.solidsoft.pitest") version "2.0.0"
 }
 
 pitest {
@@ -114,7 +114,7 @@ Apply the aggregator plugin to the root project:
 
 ```groovy
 plugins {
-    id 'info.solidsoft.pitest.aggregator' version '1.20.0-SNAPSHOT'
+    id 'info.solidsoft.pitest.aggregator' version '2.0.0'
 }
 ```
 
