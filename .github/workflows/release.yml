@@ -31,9 +31,6 @@ jobs:
       - name: Validate plugins
         run: ./gradlew validatePlugins -Pversion="${VERSION}" --no-daemon
 
-      - name: Generate sources and javadoc JARs
-        run: ./gradlew sourcesJar groovydocJar -Pversion="${VERSION}" --no-daemon
-
       - name: Upload all JARs
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
