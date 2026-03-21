@@ -36,7 +36,6 @@ ext.pitestAggregatorVersion = "1.23.0"   //Must be equal to default PIT version 
 repositories {
     mavenCentral()
     mavenLocal()
-    gradlePluginPortal()  //nebula-test 12.x published here
 }
 
 sourceSets {
@@ -68,11 +67,9 @@ dependencies {
 
     funcTestImplementation sourceSets.main.output  //to make production plugin classes visible in functional tests (it's not in testCompile configuration)
     funcTestImplementation sourceSets.test.output
-    funcTestImplementation('com.netflix.nebula:nebula-test:12.0.0') {
+    funcTestImplementation('com.netflix.nebula:nebula-test:10.6.2') {
         exclude group: 'org.apache.groovy', module: 'groovy-all'
     }
-    //nebula-test 12.x no longer pulls JUnit 4 transitively but uses it internally
-    funcTestImplementation 'junit:junit:4.13.2'
 }
 
 tasks.register("funcTest", Test) {
