@@ -1,3 +1,32 @@
+> ## This repository is archived
+>
+> **This fork is no longer maintained.** It has been superseded by **[Mutaktor](https://github.com/ioplane/mutaktor)** — a Kotlin-first Gradle plugin for PIT mutation testing, built from scratch.
+>
+> ### Why Mutaktor instead of this fork?
+>
+> This fork was created to bring `gradle-pitest-plugin` up to Gradle 9.x and JDK 25. During the process it became clear that the Groovy codebase carries too much legacy baggage: Groovy 4 migration issues, deprecated Gradle APIs throughout, no Kotlin DSL-first design, and no path to features like AI test generation or MCP integration.
+>
+> **Mutaktor** solves these problems by starting fresh in Kotlin:
+>
+> | | gradle-pitest-plugin (this fork) | [Mutaktor](https://github.com/ioplane/mutaktor) |
+> |---|---|---|
+> | Language | Groovy 4 | **Kotlin 2.3** |
+> | Gradle API | Legacy + shims | **Provider API, @CacheableTask** |
+> | Kotlin support | Basic (junk mutations) | **Native filter (5 patterns)** |
+> | Reports | HTML/XML only | **SARIF, JSON, GitHub Checks** |
+> | Git-diff scoping | No | **Yes** |
+> | Quality gate | No | **Yes** |
+> | Mutation ratchet | No | **Per-package** |
+> | Annotations | No | **@MutationCritical, @SuppressMutations** |
+> | GraalVM auto-detect | No | **Yes (Toolchain API)** |
+> | External deps | Multiple | **Zero** |
+>
+> **Use Mutaktor:** `id("io.github.ioplane.mutaktor") version "0.1.0"`
+>
+> [https://github.com/ioplane/mutaktor](https://github.com/ioplane/mutaktor)
+
+---
+
 <p align="center">
   <strong>gradle-pitest-plugin</strong><br>
   Gradle plugin for PIT Mutation Testing
